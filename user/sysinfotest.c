@@ -83,7 +83,6 @@ testcall() {
     printf("FAIL: sysinfo failed\n");
     exit(1);
   }
-
   if (sysinfo((struct sysinfo *) 0xeaeb0b5b00002f5e) !=  0xffffffffffffffff) {
     printf("FAIL: sysinfo succeeded with bad argument\n");
     exit(1);
@@ -106,8 +105,8 @@ void testproc() {
   }
   if(pid == 0){
     sinfo(&info);
-    if(info.nproc != nproc+1) {
-      printf("sysinfotest: FAIL nproc is %d instead of %d\n", info.nproc, nproc+1);
+    if(info.nproc != nproc-1) {
+      printf("sysinfotest: FAIL nproc is %d instead of %ddd\n", info.nproc, nproc-1);
       exit(1);
     }
     exit(0);

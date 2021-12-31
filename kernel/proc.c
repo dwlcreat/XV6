@@ -52,6 +52,7 @@ procinit(void)
   initlock(&wait_lock, "wait_lock");
   for(p = proc; p < &proc[NPROC]; p++) {
       initlock(&p->lock, "proc");
+      p->mask=0;
       p->kstack = KSTACK((int) (p - proc));
   }
 }
@@ -163,6 +164,7 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
+  p->mask=0;
   p->state = UNUSED;
 }
 
@@ -288,10 +290,11 @@ fork(void)
     return -1;
   }
   np->sz = p->sz;
-
+  //  copy the mask;
+   np->mask = p->mask;
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
-
+  
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
 
@@ -653,4 +656,13 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+uint64 get_unused(void){
+  uint64 counter=0;
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++){
+    if(p->state == UNUSED)
+      counter++;
+  }
+  return counter;
 }

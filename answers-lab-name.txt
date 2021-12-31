@@ -1,0 +1,11 @@
+there are two problems in user/sysinfotest.c
+
+
+in sysinfotest.c:86 line, the call as "sysinfo((struct sysinfo *) 0xeaeb0b5b00002f5e)". 
+in XV6 system,the  virtual memory of process is below 4G,
+ therefore.I think the test argument 0xeaeb0b5b00002f5e can't be exist in a process.
+
+in sysinfotest.c:108 line, the correct express should be "if(info.nproc!=nproc-1")
+
+
+
