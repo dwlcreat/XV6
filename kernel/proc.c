@@ -126,7 +126,13 @@ found:
     release(&p->lock);
     return 0;
   }
-
+  // Allocate a syscall_map page.
+    if((p->my_map = (struct usyscall *)kalloc()) == 0){
+    freeproc(p);
+    release(&p->lock);
+    return 0;
+  }
+  p->my_map->pid=p->pid;
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
@@ -153,6 +159,9 @@ freeproc(struct proc *p)
   if(p->trapframe)
     kfree((void*)p->trapframe);
   p->trapframe = 0;
+  if(p->my_map)
+    kfree((void*)p->my_map);
+  p->my_map = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;
@@ -187,7 +196,11 @@ proc_pagetable(struct proc *p)
     uvmfree(pagetable, 0);
     return 0;
   }
-
+    if(mappages(pagetable, USYSCALL, PGSIZE,
+              (uint64)(p->my_map), PTE_R) < 0){
+    uvmfree(pagetable, 0);
+    return 0;
+    }
   // map the trapframe just below TRAMPOLINE, for trampoline.S.
   if(mappages(pagetable, TRAPFRAME, PGSIZE,
               (uint64)(p->trapframe), PTE_R | PTE_W) < 0){
