@@ -77,10 +77,51 @@ sys_sleep(void)
 
 
 #ifdef LAB_PGTBL
+// pte_t *
+// walk(pagetable_t pagetable, uint64 va, int alloc)
+// {
+//   if(va >= MAXVA)
+//     panic("walk");
+
+//   for(int level = 2; level > 0; level--) {
+//     pte_t *pte = &pagetable[PX(level, va)];
+//     if(*pte & PTE_V) {
+//       pagetable = (pagetable_t)PTE2PA(*pte);
+//     } else {
+//       if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
+//         return 0;
+//       memset(pagetable, 0, PGSIZE);
+//       *pte = PA2PTE(pagetable) | PTE_V;
+//     }
+//   }
+//   return &pagetable[PX(0, va)];
+// }
+pte_t *
+walk(pagetable_t pagetable, uint64 va, int alloc);
+void
+vmprint(pagetable_t pagetable);
 int
 sys_pgaccess(void)
 {
-  // lab pgtbl: your code here.
+ uint64 buffer,bitmask;
+ uint64 temp_mask=0;
+ int num;
+ struct proc* p=myproc();
+ vmprint(p->pagetable);
+ pte_t * temp_pte_t;
+ argaddr(0,&buffer);
+ argint(1,&num);
+ argaddr(2,&bitmask);
+  if(num>32)
+    return -1;
+  for(int i=0;i!=num;i++){
+    if((temp_pte_t=walk(p->pagetable,buffer+PGSIZE*i,0))!=0){
+        if((*temp_pte_t)&PTE_A)
+          temp_mask|=(1<<i);
+         *temp_pte_t=(*temp_pte_t)&(~PTE_A);
+    }
+  }
+  copyout(p->pagetable,bitmask,(char *)&temp_mask,4);
   return 0;
 }
 #endif

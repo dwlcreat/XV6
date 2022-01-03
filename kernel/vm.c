@@ -280,7 +280,50 @@ freewalk(pagetable_t pagetable)
   }
   kfree((void*)pagetable);
 }
+//
+void
+print_hex(pte_t input,char end){
+  printf("0x0000");
+  char * a=(char *)(&input);
+  for(int i=7;i!=-1;i--){
+    if(*(a+i)<16)
+      printf("0");
+    printf("%x",*(a+i));
+  }
+  if(end==1)
+  printf("\n");
+  if(end==2)
+  printf(" ");
+}  
+void
+vmprint(pagetable_t pagetable)
+{
+  // there are 2^9 = 512 PTEs in a page table.
+  // printf("page table %x\n",0x87f6e000);
+  printf("page table ");print_hex((pte_t)pagetable,1);
+  for(int i=0;i<512;i++){
+    pte_t pte1=pagetable[i];
+    if(pte1&PTE_V){
+      pagetable_t pa2= (pagetable_t)PTE2PA(pte1);
+      printf("..%d: pte ",i);print_hex(pte1,2);printf("pa ");print_hex((pte_t)pa2,1);
+      for(int j=0;j<512;j++){
+        pte_t pte2=pa2[j];
+        if(pte2&PTE_V){
+          pagetable_t pa3=(pagetable_t)PTE2PA(pte2);
+          printf(".. .. %d: pte ",j);print_hex(pte2,2);printf("pa ");print_hex((pte_t)pa3,1);
+          for(int k=0;k!=512;k++){
+            pte_t pte3=pa3[k];
+            if(pte3&PTE_V){
+              pagetable_t pa4=(pagetable_t)PTE2PA(pte3);
+              printf(".. .. .. %d: pte ",k);print_hex(pte3,2);printf("pa ");print_hex((pte_t)pa4,1);
+            }
+          }
+        }
+      }
+    }
+  }
 
+}
 // Free user memory pages,
 // then free page-table pages.
 void
