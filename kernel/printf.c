@@ -16,6 +16,17 @@
 #include "proc.h"
 
 volatile int panicked = 0;
+int backtrace(uint64 fp){
+  uint64 stack_p=PGROUNDUP(fp);
+  while(1){
+    printf("0x00000%x\n",fp-8+4);
+    printf("%x",fp-8);
+    fp=*((uint64 *)(fp-16));
+    if(PGROUNDUP(fp)!=stack_p)
+      break;
+  }
+  return 0;
+}
 
 // lock to avoid interleaving concurrent printf's.
 static struct {

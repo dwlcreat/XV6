@@ -51,10 +51,11 @@ sys_sbrk(void)
     return -1;
   return addr;
 }
-
+int backtrace(uint64 fp);
 uint64
 sys_sleep(void)
 {
+  backtrace(r_fp());
   int n;
   uint ticks0;
 
