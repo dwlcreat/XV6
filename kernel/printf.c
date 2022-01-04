@@ -14,15 +14,32 @@
 #include "riscv.h"
 #include "defs.h"
 #include "proc.h"
-
+void
+print_hex(uint64 input,char end){
+  printf("0x");
+  char * a=(char *)(&input);
+  for(int i=7;i!=-1;i--){
+    if(*(a+i)<16)
+      printf("0");
+    printf("%x",*(a+i));
+  }
+  if(end==1)
+  printf("\n");
+  if(end==2)
+  printf(" ");
+} 
 volatile int panicked = 0;
-int backtrace(uint64 fp){
+int backtrace(void){
+  uint64 fp=r_fp();
   uint64 stack_p=PGROUNDUP(fp);
+  printf("backtrace\n");
   while(1){
-    printf("0x00000%x\n",fp-8+4);
-    printf("%x",fp-8);
+    // printf("fp and fp pagesize:");
+    // print_hex(fp,2);
+    // print_hex(PGROUNDUP(fp),1);
+    print_hex(*((uint64 *)(fp-8)),1);
     fp=*((uint64 *)(fp-16));
-    if(PGROUNDUP(fp)!=stack_p)
+    if(fp==stack_p)
       break;
   }
   return 0;
